@@ -1,0 +1,14 @@
+{
+  "name": "advent-of-code-2019",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/marc1404/advent-of-code-2019.git",
+  "author": "Marc Vornetran <marc.vornetran@gmail.com>",
+  "license": "MPL",
+  "scripts": {
+    "day1": "node src/day1/day1.js"
+  },
+  "dependencies": {
+    "consola": "2.11.0"
+  }
+}
