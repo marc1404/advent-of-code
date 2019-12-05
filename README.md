@@ -7,6 +7,7 @@
 ## Scripts
 - `yarn dev <day>` - Development mode
 - `yarn start <day>` - Production mode
-- `yarn day1`
-- `yarn day2`
-- `yarn day3`
+- `yarn day1` - Day 1
+- `yarn day2` - Day 2
+- `yarn day3` - Day 3
+- `yarn day4` - Day 4
