@@ -9,3 +9,4 @@
 - `yarn start <day>` - Production mode
 - `yarn day1`
 - `yarn day2`
+- `yarn day3`

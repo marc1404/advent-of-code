@@ -9,7 +9,8 @@
     "dev": "ts-node-dev src/index.ts",
     "start": "ts-node src/index.ts",
     "day1": "yarn start 1",
-    "day2": "yarn start 2"
+    "day2": "yarn start 2",
+    "day3": "yarn start 3"
   },
   "dependencies": {
     "consola": "2.11.0",
