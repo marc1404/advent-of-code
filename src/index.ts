@@ -1,8 +1,10 @@
 import consola from 'consola';
 import { day1 } from './day1/day1';
+import { day2 } from './day2/day2';
 
 const dayToFunction: Record<string, () => void> = {
-    1: day1
+    1: day1,
+    2: day2
 };
 
 const day = process.argv[2];
