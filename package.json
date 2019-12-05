@@ -4,7 +4,7 @@
   "main": "src/index.ts",
   "repository": "https://github.com/marc1404/advent-of-code-2019.git",
   "author": "Marc Vornetran <marc.vornetran@gmail.com>",
-  "license": "MPL",
+  "license": "MPL-2.0",
   "scripts": {
     "dev": "ts-node-dev src/index.ts",
     "start": "ts-node src/index.ts"
