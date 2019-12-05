@@ -1,14 +1,21 @@
 {
   "name": "advent-of-code-2019",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/index.ts",
   "repository": "https://github.com/marc1404/advent-of-code-2019.git",
   "author": "Marc Vornetran <marc.vornetran@gmail.com>",
   "license": "MPL",
   "scripts": {
-    "day1": "node src/day1/day1.js"
+    "dev": "ts-node-dev src/index.ts",
+    "start": "ts-node src/index.ts"
   },
   "dependencies": {
-    "consola": "2.11.0"
+    "consola": "2.11.0",
+    "ts-node": "8.5.4",
+    "typescript": "3.7.3"
+  },
+  "devDependencies": {
+    "@types/node": "12.12.14",
+    "ts-node-dev": "1.0.0-pre.44"
   }
 }
