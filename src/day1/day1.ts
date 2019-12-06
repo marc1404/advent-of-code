@@ -22,7 +22,7 @@ export function day1(): void {
         return totalFuel + calculateFuel(moduleMass, true);
     }, 0);
 
-    consola.info(`Total fuel requirement with compoensation: ${totalFuelWithCompensation}`);
+    consola.info(`Total fuel requirement with compensation: ${totalFuelWithCompensation}`);
 }
 
 function calculateFuel(mass: number, compensateFuel: boolean = false): number {
