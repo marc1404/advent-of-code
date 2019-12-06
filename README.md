@@ -11,3 +11,4 @@
 - `yarn day2` - Day 2
 - `yarn day3` - Day 3
 - `yarn day4` - Day 4
+- `yarn day5` - Day 5
