@@ -9,43 +9,43 @@ export function day3(): void {
     test2();
     test3();
     puzzle();
+}
 
-    function test1(): void {
-        const wire1 = new Wire(['R8', 'U5', 'L5', 'D3']);
-        const wire2 = new Wire(['U7', 'R6', 'D4', 'L4']);
-        const distance = determineDistanceOfClosestCrossing(wire1, wire2);
+function test1(): void {
+    const wire1 = new Wire(['R8', 'U5', 'L5', 'D3']);
+    const wire2 = new Wire(['U7', 'R6', 'D4', 'L4']);
+    const distance = determineDistanceOfClosestCrossing(wire1, wire2);
 
-        assert.strictEqual(distance, 6);
-    }
+    assert.strictEqual(distance, 6);
+}
 
-    function test2(): void {
-        const wire1 = new Wire(['R75', 'D30', 'R83', 'U83', 'L12', 'D49', 'R71', 'U7', 'L72']);
-        const wire2 = new Wire(['U62', 'R66', 'U55', 'R34', 'D71', 'R55', 'D58', 'R83']);
-        const distance = determineDistanceOfClosestCrossing(wire1, wire2);
+function test2(): void {
+    const wire1 = new Wire(['R75', 'D30', 'R83', 'U83', 'L12', 'D49', 'R71', 'U7', 'L72']);
+    const wire2 = new Wire(['U62', 'R66', 'U55', 'R34', 'D71', 'R55', 'D58', 'R83']);
+    const distance = determineDistanceOfClosestCrossing(wire1, wire2);
 
-        assert.strictEqual(distance, 159);
-    }
+    assert.strictEqual(distance, 159);
+}
 
-    function test3(): void {
-        const wire1 = new Wire(['R98', 'U47', 'R26', 'D63', 'R33', 'U87', 'L62', 'D20', 'R33', 'U53', 'R51']);
-        const wire2 = new Wire(['U98', 'R91', 'D20', 'R16', 'D67', 'R40', 'U7', 'R15', 'U6', 'R7']);
-        const distance = determineDistanceOfClosestCrossing(wire1, wire2);
+function test3(): void {
+    const wire1 = new Wire(['R98', 'U47', 'R26', 'D63', 'R33', 'U87', 'L62', 'D20', 'R33', 'U53', 'R51']);
+    const wire2 = new Wire(['U98', 'R91', 'D20', 'R16', 'D67', 'R40', 'U7', 'R15', 'U6', 'R7']);
+    const distance = determineDistanceOfClosestCrossing(wire1, wire2);
 
-        assert.strictEqual(distance, 135);
-    }
+    assert.strictEqual(distance, 135);
+}
 
-    function puzzle(): void {
-        const inputPath = path.join(__dirname, 'input.txt');
-        const input = fs.readFileSync(inputPath, {encoding: 'utf8'});
-        const [line1, line2] = input.split(os.EOL);
-        const wire1Path = line1.split(',');
-        const wire2Path = line2.split(',');
-        const wire1 = new Wire(wire1Path);
-        const wire2 = new Wire(wire2Path);
-        const distance = determineDistanceOfClosestCrossing(wire1, wire2);
+function puzzle(): void {
+    const inputPath = path.join(__dirname, 'input.txt');
+    const input = fs.readFileSync(inputPath, {encoding: 'utf8'});
+    const [line1, line2] = input.split(os.EOL);
+    const wire1Path = line1.split(',');
+    const wire2Path = line2.split(',');
+    const wire1 = new Wire(wire1Path);
+    const wire2 = new Wire(wire2Path);
+    const distance = determineDistanceOfClosestCrossing(wire1, wire2);
 
-        consola.info(`Distance of closest crossing: ${distance}`);
-    }
+    consola.info(`Distance of closest crossing: ${distance}`);
 }
 
 function determineDistanceOfClosestCrossing(wire1: Wire, wire2: Wire): number {
