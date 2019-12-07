@@ -29,11 +29,42 @@ export function day2(): void {
 
     assert.deepStrictEqual(testResult5, [30, 1, 1, 4, 2, 5, 6, 0, 99]);
 
-    input[1] = 12;
-    input[2] = 2;
-    const result = executeIntCode(input);
+    puzzlePart1();
+    puzzlePart2();
+}
 
-    consola.info(`Value at position 0: ${result[0]}`);
+function puzzlePart1(): void {
+    const program = [...input];
+    program[1] = 12;
+    program[2] = 2;
+
+    executeIntCode(program);
+
+    const [output] = program;
+
+    consola.info(`Value at position 0: ${output}`);
+}
+
+function puzzlePart2(): void {
+    const expected = 19690720;
+
+    for (let noun = 0; noun <= 99; noun++) {
+        for (let verb = 0; verb <= 99; verb++) {
+            const program = [...input];
+            program[1] = noun;
+            program[2] = verb;
+
+            executeIntCode(program);
+
+            const [output] = program;
+
+            if (output === expected) {
+                consola.info(`The output of ${expected} is produced by noun=${noun} and verb=${verb}`);
+
+                return;
+            }
+        }
+    }
 }
 
 function executeIntCode(intCode: number[]): number[] {
