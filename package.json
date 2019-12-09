@@ -12,7 +12,12 @@
     "day2": "yarn start 2",
     "day3": "yarn start 3",
     "day4": "yarn start 4",
-    "day5": "yarn start 5"
+    "day5": "yarn start 5",
+    "day6": "yarn start 6",
+    "day7": "yarn start 7",
+    "day8": "yarn start 8",
+    "day9": "yarn start 9",
+    "day10": "yarn start 10"
   },
   "dependencies": {
     "consola": "2.11.0",
