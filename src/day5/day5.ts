@@ -104,7 +104,7 @@ function puzzle2(): void {
     executeIntCode(day5Input);
 }
 
-function executeIntCode(intCode: number[]): number[] {
+export function executeIntCode(intCode: number[], inputs: number[] = [], outputs: number[] = []): number[] {
     let instructionPointer: number = 0;
 
     while (true) {
@@ -117,11 +117,18 @@ function executeIntCode(intCode: number[]): number[] {
 
         const opCode = instruction.getOpCode();
         const parameterModes = instruction.getParameterModes();
-        instructionPointer = executeOperation(intCode, opCode, instructionPointer, parameterModes);
+        instructionPointer = executeOperation(intCode, opCode, instructionPointer, parameterModes, inputs, outputs);
     }
 }
 
-function executeOperation(intCode: number[], opCode: number, instructionPointer: number, parameterModes: number[]): number {
+function executeOperation(
+    intCode: number[],
+    opCode: number,
+    instructionPointer: number,
+    parameterModes: number[],
+    inputs: number[],
+    outputs: number[]
+): number {
     if (opCode === OpCode.Addition) {
         const left = getParameter(intCode, instructionPointer, parameterModes, 0);
         const right = getParameter(intCode, instructionPointer, parameterModes, 1);
@@ -142,8 +149,7 @@ function executeOperation(intCode: number[], opCode: number, instructionPointer:
 
     if (opCode === OpCode.Input) {
         const outputPointer = intCode[instructionPointer + 1];
-        const inputString = readLineSync.question(`Input for position ${outputPointer}: `);
-        intCode[outputPointer] = Number.parseInt(inputString, 10);
+        intCode[outputPointer] = readInput(outputPointer, inputs);
 
         return instructionPointer + 2;
     }
@@ -152,6 +158,7 @@ function executeOperation(intCode: number[], opCode: number, instructionPointer:
         const outputPointer = intCode[instructionPointer + 1];
         const output = intCode[outputPointer];
 
+        outputs.push(output);
         consola.info(`Value at position ${outputPointer} is ${output}`);
 
         return instructionPointer + 2;
@@ -194,6 +201,18 @@ function executeOperation(intCode: number[], opCode: number, instructionPointer:
     }
 
     throw new Error(`Unknown opcode: ${opCode}!`);
+}
+
+function readInput(outputPointer: number, inputs: number[]): number {
+    const input = inputs.shift();
+
+    if (input !== undefined) {
+        return input;
+    }
+
+    const inputString = readLineSync.question(`Input for position ${outputPointer}: `);
+
+    return Number.parseInt(inputString, 10);
 }
 
 function getParameter(intCode: number[], instructionPointer: number, parameterModes: number[], parameterIndex: number): number {
