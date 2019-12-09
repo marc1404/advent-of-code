@@ -56,7 +56,7 @@ function getPermutations(sequence: number[]): number[][] {
         const number = sequence[i];
         const remainingSequence = [
             ...sequence.slice(0, i),
-            ...sequence.slice(i + 1,)
+            ...sequence.slice(i + 1)
         ];
 
         const innerPermutations = getPermutations(remainingSequence)
