@@ -10,24 +10,97 @@ enum ParameterMode {
 }
 
 export function day5(): void {
+    testInstruction(1002, 2, [0, 1, 0]);
+    testInstruction(1101, 1, [1, 1, 0]);
+    testInstruction(1, 1, [0, 0, 0]);
+    testInstruction(11101, 1, [1, 1, 1]);
+    testInstruction(11001, 1, [0, 1, 1]);
+
     test1();
     test2();
-    puzzle();
+    test3();
+
+    puzzle1();
+
+    test4();
+    test5();
+    test6();
+    test7();
+    test8();
+    test9();
+    test10();
+
+    puzzle2();
+}
+
+function testInstruction(instructionValue: number, expectedOpCode: number, expectedParameterNodes: number[]): void {
+    const instruction = new Instruction(instructionValue);
+    const opCode = instruction.getOpCode();
+    const parameterModes = instruction.getParameterModes();
+
+    assert.strictEqual(opCode, expectedOpCode);
+    assert.deepStrictEqual(parameterModes, expectedParameterNodes);
 }
 
 function test1(): void {
+    consola.info('input = output');
+    executeIntCode([3, 0, 4, 0, 99]);
+}
+
+function test2(): void {
     const intCode = executeIntCode([1002, 4, 3, 4, 33]);
 
     assert.strictEqual(intCode[4], 99);
 }
 
-function test2(): void {
+function test3(): void {
     const intCode = executeIntCode([1101, 100, -1, 4, 0]);
 
     assert.strictEqual(intCode[4], 99);
 }
 
-function puzzle(): void {
+function puzzle1(): void {
+    consola.info('Please input 1');
+    executeIntCode(day5Input);
+}
+
+function test4(): void {
+    consola.info('input = 8 ? 1 : 0');
+    executeIntCode([3, 9, 8, 9, 10, 9, 4, 9, 99, -1, 8]);
+}
+
+function test5(): void {
+    consola.info('input < 8 ? 1 : 0');
+    executeIntCode([3, 9, 7, 9, 10, 9, 4, 9, 99, -1, 8]);
+}
+
+function test6(): void {
+    consola.info('input = 8 ? 1 : 0');
+    executeIntCode([3, 3, 1108, -1, 8, 3, 4, 3, 99]);
+}
+
+function test7(): void {
+    consola.info('input < 8 ? 1 : 0');
+    executeIntCode([3, 3, 1107, -1, 8, 3, 4, 3, 99]);
+}
+
+function test8(): void {
+    consola.info('input = 1 ? 1 : 0');
+    executeIntCode([3, 12, 6, 12, 15, 1, 13, 14, 13, 4, 13, 99, -1, 0, 1, 9]);
+}
+
+function test9(): void {
+    consola.info('input = 1 ? 1 : 0');
+    executeIntCode([3, 3, 1105, -1, 9, 1101, 0, 0, 12, 4, 12, 99, 1]);
+}
+
+function test10(): void {
+    consola.info('input < 8 -> 999 | input = 8 -> 1000 | input > 8 -> 1001');
+    executeIntCode([3, 21, 1008, 21, 8, 20, 1005, 20, 22, 107, 8, 21, 20, 1006, 20, 31, 1106, 0, 36, 98, 0, 0, 1002, 21, 125, 20, 4, 20, 1105, 1, 46, 104, 999, 1105, 1, 46, 1101, 1000, 1, 20, 4, 20, 1105, 1, 46, 98, 99]);
+}
+
+function puzzle2(): void {
+    consola.info('Please input 5');
     executeIntCode(day5Input);
 }
 
@@ -44,8 +117,7 @@ function executeIntCode(intCode: number[]): number[] {
 
         const opCode = instruction.getOpCode();
         const parameterModes = instruction.getParameterModes();
-        const pointerShift = executeOperation(intCode, opCode, instructionPointer, parameterModes);
-        instructionPointer += pointerShift;
+        instructionPointer = executeOperation(intCode, opCode, instructionPointer, parameterModes);
     }
 }
 
@@ -56,7 +128,7 @@ function executeOperation(intCode: number[], opCode: number, instructionPointer:
         const outputPointer = intCode[instructionPointer + 3];
         intCode[outputPointer] = left + right;
 
-        return 4;
+        return instructionPointer + 4;
     }
 
     if (opCode === OpCode.Multiplication) {
@@ -65,15 +137,15 @@ function executeOperation(intCode: number[], opCode: number, instructionPointer:
         const outputPointer = intCode[instructionPointer + 3];
         intCode[outputPointer] = left * right;
 
-        return 4;
+        return instructionPointer + 4;
     }
 
     if (opCode === OpCode.Input) {
         const outputPointer = intCode[instructionPointer + 1];
-        const input = readLineSync.question(`Input for position ${outputPointer}: `);
-        intCode[outputPointer] = Number.parseInt(input, 10);
+        const inputString = readLineSync.question(`Input for position ${outputPointer}: `);
+        intCode[outputPointer] = Number.parseInt(inputString, 10);
 
-        return 2;
+        return instructionPointer + 2;
     }
 
     if (opCode === OpCode.Output) {
@@ -82,7 +154,43 @@ function executeOperation(intCode: number[], opCode: number, instructionPointer:
 
         consola.info(`Value at position ${outputPointer} is ${output}`);
 
-        return 2;
+        return instructionPointer + 2;
+    }
+
+    if (opCode === OpCode.JumpIfTrue) {
+        const a = getParameter(intCode, instructionPointer, parameterModes, 0);
+        const b = getParameter(intCode, instructionPointer, parameterModes, 1);
+
+        return a !== 0
+            ? b
+            : instructionPointer + 3;
+    }
+
+    if (opCode === OpCode.JumpIfFalse) {
+        const a = getParameter(intCode, instructionPointer, parameterModes, 0);
+        const b = getParameter(intCode, instructionPointer, parameterModes, 1);
+
+        return a === 0
+            ? b
+            : instructionPointer + 3;
+    }
+
+    if (opCode === OpCode.LessThan) {
+        const left = getParameter(intCode, instructionPointer, parameterModes, 0);
+        const right = getParameter(intCode, instructionPointer, parameterModes, 1);
+        const outputPointer = intCode[instructionPointer + 3];
+        intCode[outputPointer] = left < right ? 1 : 0;
+
+        return instructionPointer + 4;
+    }
+
+    if (opCode === OpCode.Equals) {
+        const left = getParameter(intCode, instructionPointer, parameterModes, 0);
+        const right = getParameter(intCode, instructionPointer, parameterModes, 1);
+        const outputPointer = intCode[instructionPointer + 3];
+        intCode[outputPointer] = left === right ? 1 : 0;
+
+        return instructionPointer + 4;
     }
 
     throw new Error(`Unknown opcode: ${opCode}!`);
