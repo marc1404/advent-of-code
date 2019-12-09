@@ -16,11 +16,13 @@
   },
   "dependencies": {
     "consola": "2.11.0",
+    "readline-sync": "1.4.10",
     "ts-node": "8.5.4",
     "typescript": "3.7.3"
   },
   "devDependencies": {
     "@types/node": "12.12.14",
+    "@types/readline-sync": "1.4.3",
     "ts-node-dev": "1.0.0-pre.44"
   }
 }

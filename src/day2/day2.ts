@@ -5,6 +5,8 @@ import { day2Input as input } from './input';
 export enum OpCode {
     Addition = 1,
     Multiplication = 2,
+    Input = 3,
+    Output = 4,
     Done = 99
 }
 
@@ -80,20 +82,20 @@ function executeIntCode(intCode: number[]): number[] {
         const operation = getOperation(opCode);
         const left = intCode[leftIndex];
         const right = intCode[rightIndex];
-        intCode[outputIndex] = operation(left, right);
+        intCode[outputIndex] = operation([left, right]);
         pointer += 4;
     } while (true);
 
     return intCode;
 }
 
-export function getOperation(opCode: number): (left: number, right: number) => number {
+export function getOperation(opCode: number): (parameters: number[]) => number {
     if (opCode === OpCode.Addition) {
-        return (left: number, right: number) => left + right;
+        return (parameters: number[]) => parameters[0] + parameters[1];
     }
 
     if (opCode === OpCode.Multiplication) {
-        return (left: number, right: number) => left * right;
+        return (parameters: number[]) => parameters[0] * parameters[1];
     }
 
     throw new Error(`Unknown opcode: ${opCode}!`);
