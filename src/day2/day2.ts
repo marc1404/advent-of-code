@@ -2,7 +2,7 @@ import consola from 'consola';
 import assert from 'assert';
 import { day2Input as input } from './input';
 
-enum OpCode {
+export enum OpCode {
     Addition = 1,
     Multiplication = 2,
     Done = 99
@@ -87,7 +87,7 @@ function executeIntCode(intCode: number[]): number[] {
     return intCode;
 }
 
-function getOperation(opCode: number): (left: number, right: number) => number {
+export function getOperation(opCode: number): (left: number, right: number) => number {
     if (opCode === OpCode.Addition) {
         return (left: number, right: number) => left + right;
     }
