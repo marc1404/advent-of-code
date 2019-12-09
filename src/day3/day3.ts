@@ -89,8 +89,7 @@ function determineCrossings(wire1: Wire, wire2: Wire): Crossing[] {
             const coordinate1 = panel.get(coordinate2.toString());
 
             return new Crossing(coordinate1 as Coordinate, coordinate2);
-        })
-        .filter(crossing => !!crossing);
+        });
 }
 
 enum Directions {
