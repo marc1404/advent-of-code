@@ -104,10 +104,15 @@ function puzzle2(): void {
     executeIntCode(day5Input);
 }
 
-export function executeIntCode(intCode: number[], inputs: number[] = [], outputs: number[] = []): number[] {
-    let instructionPointer: number = 0;
-
+export function executeIntCode(
+    intCode: number[],
+    inputs: number[] = [],
+    outputs: number[] = [],
+    pointerState: number[] = [0],
+    yieldOnOutput: boolean = false
+): number[] {
     while (true) {
+        const instructionPointer = pointerState[0];
         const instructionValue = intCode[instructionPointer];
         const instruction = new Instruction(instructionValue);
 
@@ -117,7 +122,11 @@ export function executeIntCode(intCode: number[], inputs: number[] = [], outputs
 
         const opCode = instruction.getOpCode();
         const parameterModes = instruction.getParameterModes();
-        instructionPointer = executeOperation(intCode, opCode, instructionPointer, parameterModes, inputs, outputs);
+        pointerState[0] = executeOperation(intCode, opCode, instructionPointer, parameterModes, inputs, outputs);
+
+        if (yieldOnOutput && outputs.length > 0) {
+            return intCode;
+        }
     }
 }
 
