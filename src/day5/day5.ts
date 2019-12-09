@@ -57,7 +57,7 @@ class Instruction {
     }
 
     private initParameterModes(instructionString: string): number[] {
-        if (instructionString.length === 2) {
+        if (instructionString.length <= 2) {
             return [];
         }
 
