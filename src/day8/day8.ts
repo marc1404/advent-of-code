@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { day8Input } from './input';
+import {day8Input} from './input';
 import consola from 'consola';
 
 enum Color {
@@ -38,6 +38,7 @@ function test2(): void {
     const decodedImage = decodeImage(layers);
 
     assert.deepStrictEqual(decodedImage, [0, 1, 1, 0]);
+    printImage(decodedImage, 2);
 }
 
 function puzzle2(layers: Layer[]): void {
@@ -67,8 +68,8 @@ function printImage(pixels: number[], width: number): void {
     for (let i = 0; i < image.length; i += width) {
         const row = image
             .substring(i, i + width)
-            .replace(new RegExp('0', 'g'), '⬛️')
-            .replace(new RegExp('1', 'g'), '⬜️');
+            .replace(new RegExp(Color.Black.toString(), 'g'), '⬛️')
+            .replace(new RegExp(Color.White.toString(), 'g'), '⬜️');
 
         consola.info(row);
     }
@@ -102,19 +103,12 @@ function getImageLayers(imageData: string, width: number, height: number): Layer
 
 class Layer {
 
-    private readonly rows: string[] = [];
     private readonly counts: number[];
 
     constructor(
         private readonly layerString: string,
         private readonly width: number
     ) {
-        for (let i = 0; i < layerString.length; i += width) {
-            const row = layerString.substring(i, i + width);
-
-            this.rows.push(row);
-        }
-
         this.counts = [
             this.count('0'),
             this.count('1'),
@@ -124,10 +118,6 @@ class Layer {
 
     public getLength(): number {
         return this.layerString.length;
-    }
-
-    public getWidth(): number {
-        return this.width;
     }
 
     public getDigitCount(digit: number): number {
