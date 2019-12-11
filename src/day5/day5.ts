@@ -109,6 +109,7 @@ export interface IntCodeState {
     inputs: number[];
     outputs: number[];
     instructionPointer: number;
+    isDone: boolean
 }
 
 export function executeIntCode(
@@ -118,11 +119,15 @@ export function executeIntCode(
     instructionPointer: number = 0,
     yieldOnOutput: boolean = false
 ): IntCodeState {
+    let isDone: boolean = false;
+
     while (true) {
         const instructionValue = intCode[instructionPointer];
         const instruction = new Instruction(instructionValue);
 
         if (instruction.isDone()) {
+            isDone = true;
+
             break;
         }
 
@@ -135,7 +140,7 @@ export function executeIntCode(
         }
     }
 
-    return {intCode, inputs, outputs, instructionPointer};
+    return {intCode, inputs, outputs, instructionPointer, isDone};
 }
 
 function executeOperation(

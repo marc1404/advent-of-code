@@ -1,4 +1,4 @@
-import { executeIntCode } from '../day5/day5';
+import { executeIntCode, IntCodeState } from '../day5/day5';
 import assert from 'assert';
 import { day7Input } from './input';
 import consola from 'consola';
@@ -9,7 +9,8 @@ export function day7(): void {
     // test3();
     // puzzle1();
     test4();
-    // test5();
+    test5();
+    puzzle2();
 }
 
 function test1(): void {
@@ -61,6 +62,15 @@ function test5(): void {
     consola.info(outputSignal);
 }
 
+function puzzle2(): void {
+    const phaseSettings = [5, 6, 7, 8, 9];
+    const maxOutputSignal = getPermutations(phaseSettings)
+        .map(phaseSettings => runAmplifiersInFeedbackLoop(day7Input, phaseSettings))
+        .reduce((maxOutputSignal, outputSignal) => Math.max(outputSignal as number, maxOutputSignal as number), Number.MIN_VALUE);
+
+    consola.info(`The highest output signal is ${maxOutputSignal}`);
+}
+
 function getPermutations(sequence: number[]): number[][] {
     const permutations: number[][] = [];
 
@@ -102,38 +112,63 @@ function runAmplifiers(intCode: number[], phaseSettings: number[]): number {
     return lastOutputSignal;
 }
 
-function runAmplifiersInFeedbackLoop(intCode: number[], phaseSettings: number[]): number {
-    const instructionPointers: number[] = [];
-    const amplifierIntCodes: number[][] = [];
-
-    for (let i = 0; i < phaseSettings.length; i++) {
-        instructionPointers[i] = 0;
-        amplifierIntCodes[i] = [...intCode];
-    }
-
-    let lastOutputSignal = 0;
+function runAmplifiersInFeedbackLoop(intCode: number[], phaseSettings: number[]): number | null {
     let feedbackLoop = true;
+    let amplifierIndex = 0;
+    let lastOutput: number | null = null;
+    const amplifiers = phaseSettings.map(phaseSetting => new Amplifier([...intCode], phaseSetting));
+
+    amplifiers[0].addInput(0);
 
     while (feedbackLoop) {
-        for (let i = 0; i < phaseSettings.length; i++) {
-            const instructionPointer = instructionPointers[i];
-            const amplifierIntCode = amplifierIntCodes[i];
-            const phaseSetting = phaseSettings[i];
-            const inputs = [phaseSetting, lastOutputSignal];
-            const outputs: number[] = [];
-            const pointerState = [instructionPointer];
-            const intCodeState = executeIntCode(amplifierIntCode, inputs, outputs, instructionPointer, true);
-            amplifierIntCodes[i] = intCodeState.intCode;
-            const [output] = outputs;
+        const {outputs, isDone} = amplifiers[amplifierIndex].executeIntCode();
+        const [output] = outputs;
+        lastOutput = output ?? lastOutput;
 
-            if (!output) {
-                return lastOutputSignal;
-            }
-
-            lastOutputSignal = output;
-            instructionPointers[i] = pointerState[0];
+        if (isDone) {
+            break;
         }
+
+        amplifierIndex = getNextAmplifier(amplifiers, amplifierIndex);
+
+        amplifiers[amplifierIndex].addInput(output);
     }
 
-    return lastOutputSignal;
+    return lastOutput;
+}
+
+function getNextAmplifier(amplifiers: Amplifier[], currentAmplifierIndex: number): number {
+    const nextAmplifierIndex = currentAmplifierIndex + 1;
+
+    return nextAmplifierIndex < amplifiers.length ? nextAmplifierIndex : 0;
+}
+
+class Amplifier {
+
+    private instructionPointer: number = 0;
+    private inputs: number[] = [];
+    private outputs: number[] = [];
+
+    constructor(
+        private intCode: number[],
+        private readonly phaseSetting: number
+    ) {
+        this.addInput(phaseSetting);
+    }
+
+    public executeIntCode(): IntCodeState {
+        const intCodeState = executeIntCode(this.intCode, this.inputs, this.outputs, this.instructionPointer, true);
+        const {intCode, inputs, instructionPointer} = intCodeState;
+        this.intCode = intCode;
+        this.inputs = inputs;
+        this.outputs = [];
+        this.instructionPointer = instructionPointer;
+
+        return intCodeState;
+    }
+
+    public addInput(input: number): void {
+        this.inputs.push(input);
+    }
+
 }
