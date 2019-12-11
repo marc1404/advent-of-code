@@ -9,12 +9,10 @@ enum Color {
 }
 
 export function day8(): void {
-    const layers = getImageLayers(day8Input, 25, 6);
-
     test1();
-    puzzle1(layers);
+    puzzle1();
     test2();
-    puzzle2(layers);
+    puzzle2();
 }
 
 function test1(): void {
@@ -23,7 +21,9 @@ function test1(): void {
     assert.strictEqual(layers.length, 2);
 }
 
-function puzzle1(layers: Layer[]): void {
+function puzzle1(): void {
+    const layers = getImageLayers(day8Input, 25, 6);
+
     assert.strictEqual(layers.length, day8Input.length / (25 * 6));
 
     const sortedLayers = layers.sort((a, b) => a.getDigitCount(0) - b.getDigitCount(0));
@@ -41,7 +41,8 @@ function test2(): void {
     printImage(decodedImage, 2);
 }
 
-function puzzle2(layers: Layer[]): void {
+function puzzle2(): void {
+    const layers = getImageLayers(day8Input, 25, 6);
     const decodedImage = decodeImage(layers);
 
     printImage(decodedImage, 25);
@@ -93,7 +94,7 @@ function getImageLayers(imageData: string, width: number, height: number): Layer
 
     for (let i = 0; i < imageData.length; i += layerLength) {
         const layerString = imageData.substring(i, i + layerLength);
-        const layer = new Layer(layerString, width);
+        const layer = new Layer(layerString);
 
         layers.push(layer);
     }
@@ -106,8 +107,7 @@ class Layer {
     private readonly counts: number[];
 
     constructor(
-        private readonly layerString: string,
-        private readonly width: number
+        private readonly layerString: string
     ) {
         this.counts = [
             this.count('0'),
