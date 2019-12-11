@@ -122,7 +122,8 @@ function runAmplifiersInFeedbackLoop(intCode: number[], phaseSettings: number[])
             const inputs = [phaseSetting, lastOutputSignal];
             const outputs: number[] = [];
             const pointerState = [instructionPointer];
-            amplifierIntCodes[i] = executeIntCode(amplifierIntCode, inputs, outputs, pointerState, true);
+            const intCodeState = executeIntCode(amplifierIntCode, inputs, outputs, instructionPointer, true);
+            amplifierIntCodes[i] = intCodeState.intCode;
             const [output] = outputs;
 
             if (!output) {

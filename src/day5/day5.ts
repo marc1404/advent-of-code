@@ -48,13 +48,13 @@ function test1(): void {
 }
 
 function test2(): void {
-    const intCode = executeIntCode([1002, 4, 3, 4, 33]);
+    const {intCode} = executeIntCode([1002, 4, 3, 4, 33]);
 
     assert.strictEqual(intCode[4], 99);
 }
 
 function test3(): void {
-    const intCode = executeIntCode([1101, 100, -1, 4, 0]);
+    const {intCode} = executeIntCode([1101, 100, -1, 4, 0]);
 
     assert.strictEqual(intCode[4], 99);
 }
@@ -104,30 +104,38 @@ function puzzle2(): void {
     executeIntCode(day5Input);
 }
 
+export interface IntCodeState {
+    intCode: number[];
+    inputs: number[];
+    outputs: number[];
+    instructionPointer: number;
+}
+
 export function executeIntCode(
     intCode: number[],
     inputs: number[] = [],
     outputs: number[] = [],
-    pointerState: number[] = [0],
+    instructionPointer: number = 0,
     yieldOnOutput: boolean = false
-): number[] {
+): IntCodeState {
     while (true) {
-        const instructionPointer = pointerState[0];
         const instructionValue = intCode[instructionPointer];
         const instruction = new Instruction(instructionValue);
 
         if (instruction.isDone()) {
-            return intCode;
+            break;
         }
 
         const opCode = instruction.getOpCode();
         const parameterModes = instruction.getParameterModes();
-        pointerState[0] = executeOperation(intCode, opCode, instructionPointer, parameterModes, inputs, outputs);
+        instructionPointer = executeOperation(intCode, opCode, instructionPointer, parameterModes, inputs, outputs);
 
         if (yieldOnOutput && outputs.length > 0) {
-            return intCode;
+            break;
         }
     }
+
+    return {intCode, inputs, outputs, instructionPointer};
 }
 
 function executeOperation(
