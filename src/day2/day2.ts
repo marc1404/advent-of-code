@@ -1,26 +1,36 @@
 import consola from 'consola';
 import assert from 'assert';
 import { day2Input as input } from './input';
-import { OpCode } from '../int-code/OpCode';
+import { IntCode } from '../int-code/IntCode';
 
 export function day2(): void {
-    const testResult1 = executeIntCode([1, 9, 10, 3, 2, 3, 11, 0, 99, 30, 40, 50]);
+    const testResult1 = new IntCode([1, 9, 10, 3, 2, 3, 11, 0, 99, 30, 40, 50])
+        .execute()
+        .getIntCode();
 
     assert.deepStrictEqual(testResult1, [3500, 9, 10, 70, 2, 3, 11, 0, 99, 30, 40, 50]);
 
-    const testResult2 = executeIntCode([1, 0, 0, 0, 99]);
+    const testResult2 = new IntCode([1, 0, 0, 0, 99])
+        .execute()
+        .getIntCode();
 
     assert.deepStrictEqual(testResult2, [2, 0, 0, 0, 99]);
 
-    const testResult3 = executeIntCode([2, 3, 0, 3, 99]);
+    const testResult3 = new IntCode([2, 3, 0, 3, 99])
+        .execute()
+        .getIntCode();
 
     assert.deepStrictEqual(testResult3, [2, 3, 0, 6, 99]);
 
-    const testResult4 = executeIntCode([2, 4, 4, 5, 99, 0]);
+    const testResult4 = new IntCode([2, 4, 4, 5, 99, 0])
+        .execute()
+        .getIntCode();
 
     assert.deepStrictEqual(testResult4, [2, 4, 4, 5, 99, 9801]);
 
-    const testResult5 = executeIntCode([1, 1, 1, 4, 99, 5, 6, 0, 99]);
+    const testResult5 = new IntCode([1, 1, 1, 4, 99, 5, 6, 0, 99])
+        .execute()
+        .getIntCode();
 
     assert.deepStrictEqual(testResult5, [30, 1, 1, 4, 2, 5, 6, 0, 99]);
 
@@ -33,9 +43,11 @@ function puzzlePart1(): void {
     program[1] = 12;
     program[2] = 2;
 
-    executeIntCode(program);
+    const intCode = new IntCode(program)
+        .execute()
+        .getIntCode();
 
-    const [output] = program;
+    const [output] = intCode;
 
     consola.info(`Value at position 0: ${output}`);
 }
@@ -49,9 +61,11 @@ function puzzlePart2(): void {
             program[1] = noun;
             program[2] = verb;
 
-            executeIntCode(program);
+            const intCode = new IntCode(program)
+                .execute()
+                .getIntCode();
 
-            const [output] = program;
+            const [output] = intCode;
 
             if (output === expected) {
                 consola.info(`The output of ${expected} is produced by noun=${noun} and verb=${verb}`);
@@ -60,36 +74,4 @@ function puzzlePart2(): void {
             }
         }
     }
-}
-
-function executeIntCode(intCode: number[]): number[] {
-    let pointer = 0;
-
-    do {
-        const [opCode, leftIndex, rightIndex, outputIndex] = intCode.slice(pointer, pointer + 4);
-
-        if (opCode === OpCode.Done) {
-            break;
-        }
-
-        const operation = getOperation(opCode);
-        const left = intCode[leftIndex];
-        const right = intCode[rightIndex];
-        intCode[outputIndex] = operation([left, right]);
-        pointer += 4;
-    } while (true);
-
-    return intCode;
-}
-
-export function getOperation(opCode: number): (parameters: number[]) => number {
-    if (opCode === OpCode.Addition) {
-        return (parameters: number[]) => parameters[0] + parameters[1];
-    }
-
-    if (opCode === OpCode.Multiplication) {
-        return (parameters: number[]) => parameters[0] * parameters[1];
-    }
-
-    throw new Error(`Unknown opcode: ${opCode}!`);
 }
