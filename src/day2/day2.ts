@@ -1,18 +1,7 @@
 import consola from 'consola';
 import assert from 'assert';
 import { day2Input as input } from './input';
-
-export enum OpCode {
-    Addition = 1,
-    Multiplication = 2,
-    Input = 3,
-    Output = 4,
-    JumpIfTrue = 5,
-    JumpIfFalse = 6,
-    LessThan = 7,
-    Equals = 8,
-    Done = 99
-}
+import { OpCode } from '../int-code/OpCode';
 
 export function day2(): void {
     const testResult1 = executeIntCode([1, 9, 10, 3, 2, 3, 11, 0, 99, 30, 40, 50]);

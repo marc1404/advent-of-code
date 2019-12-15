@@ -1,13 +1,13 @@
-import { executeIntCode, IntCodeState } from '../day5/day5';
 import assert from 'assert';
 import { day7Input } from './input';
 import consola from 'consola';
+import { IntCode } from '../int-code/IntCode';
 
 export function day7(): void {
-    // test1();
-    // test2();
-    // test3();
-    // puzzle1();
+    test1();
+    test2();
+    test3();
+    puzzle1();
     test4();
     test5();
     puzzle2();
@@ -100,11 +100,10 @@ function runAmplifiers(intCode: number[], phaseSettings: number[]): number {
     let lastOutputSignal = 0;
 
     for (const phaseSetting of phaseSettings) {
-        const amplifierIntCode = [...intCode];
         const inputs = [phaseSetting, lastOutputSignal];
-        const outputs: number[] = [];
-
-        executeIntCode(amplifierIntCode, inputs, outputs);
+        const outputs = new IntCode(intCode, inputs)
+            .execute()
+            .getOutputs();
 
         lastOutputSignal = outputs[0];
     }
@@ -116,16 +115,17 @@ function runAmplifiersInFeedbackLoop(intCode: number[], phaseSettings: number[])
     let feedbackLoop = true;
     let amplifierIndex = 0;
     let lastOutput: number | null = null;
-    const amplifiers = phaseSettings.map(phaseSetting => new Amplifier([...intCode], phaseSetting));
+    const amplifiers = phaseSettings.map(phaseSetting => new IntCode(intCode, [phaseSetting]));
 
     amplifiers[0].addInput(0);
 
     while (feedbackLoop) {
-        const {outputs, isDone} = amplifiers[amplifierIndex].executeIntCode();
+        const amplifier = amplifiers[amplifierIndex].execute(true);
+        const outputs = amplifier.getOutputs();
         const [output] = outputs;
         lastOutput = output ?? lastOutput;
 
-        if (isDone) {
+        if (amplifier.isDone()) {
             break;
         }
 
@@ -137,38 +137,8 @@ function runAmplifiersInFeedbackLoop(intCode: number[], phaseSettings: number[])
     return lastOutput;
 }
 
-function getNextAmplifier(amplifiers: Amplifier[], currentAmplifierIndex: number): number {
+function getNextAmplifier(amplifiers: IntCode[], currentAmplifierIndex: number): number {
     const nextAmplifierIndex = currentAmplifierIndex + 1;
 
     return nextAmplifierIndex < amplifiers.length ? nextAmplifierIndex : 0;
-}
-
-class Amplifier {
-
-    private instructionPointer: number = 0;
-    private inputs: number[] = [];
-    private outputs: number[] = [];
-
-    constructor(
-        private intCode: number[],
-        private readonly phaseSetting: number
-    ) {
-        this.addInput(phaseSetting);
-    }
-
-    public executeIntCode(): IntCodeState {
-        const intCodeState = executeIntCode(this.intCode, this.inputs, this.outputs, this.instructionPointer, true);
-        const {intCode, inputs, instructionPointer} = intCodeState;
-        this.intCode = intCode;
-        this.inputs = inputs;
-        this.outputs = [];
-        this.instructionPointer = instructionPointer;
-
-        return intCodeState;
-    }
-
-    public addInput(input: number): void {
-        this.inputs.push(input);
-    }
-
 }
