@@ -10,11 +10,13 @@ export class IntCode {
     private readonly inputs: number[];
     private readonly outputs: number[] = [];
     private instructionPointer: number = 0;
+    private relativeBase: number = 0;
     private _isDone: boolean = false;
 
-    constructor(intCode: number[], inputs: number[] = []) {
+    constructor(intCode: number[], inputs: number[] = [], relativeBase: number = 0) {
         this.intCode = [...intCode];
         this.inputs = [...inputs];
+        this.relativeBase = relativeBase;
     }
 
     public addInput(input: number): void {
@@ -33,10 +35,14 @@ export class IntCode {
         return this._isDone;
     }
 
+    public getRelativeBase(): number {
+        return this.relativeBase;
+    }
+
     public execute(yieldOnOutput: boolean = false): IntCode {
         while (true) {
             const {intCode, instructionPointer} = this;
-            const instructionValue = intCode[instructionPointer];
+            const instructionValue = this.getIntCodeAt(instructionPointer);
             const instruction = new Instruction(instructionValue);
 
             if (instruction.isDone()) {
@@ -63,7 +69,7 @@ export class IntCode {
         if (opCode === OpCode.Addition) {
             const left = this.getParameter(parameterModes, 0);
             const right = this.getParameter(parameterModes, 1);
-            const outputPointer = intCode[instructionPointer + 3];
+            const outputPointer = this.getIntCodeAt(instructionPointer + 3);
             intCode[outputPointer] = left + right;
 
             return instructionPointer + 4;
@@ -72,22 +78,22 @@ export class IntCode {
         if (opCode === OpCode.Multiplication) {
             const left = this.getParameter(parameterModes, 0);
             const right = this.getParameter(parameterModes, 1);
-            const outputPointer = intCode[instructionPointer + 3];
+            const outputPointer = this.getIntCodeAt(instructionPointer + 3);
             intCode[outputPointer] = left * right;
 
             return instructionPointer + 4;
         }
 
         if (opCode === OpCode.Input) {
-            const outputPointer = intCode[instructionPointer + 1];
+            const outputPointer = this.getIntCodeAt(instructionPointer + 1);
             intCode[outputPointer] = this.readInput(outputPointer);
 
             return instructionPointer + 2;
         }
 
         if (opCode === OpCode.Output) {
-            const outputPointer = intCode[instructionPointer + 1];
-            const output = intCode[outputPointer];
+            const outputPointer = this.getParameter(parameterModes, 0);
+            const output = this.getIntCodeAt(outputPointer);
 
             this.outputs.unshift(output);
             consola.info(`Value at position ${outputPointer} is ${output}`);
@@ -116,7 +122,7 @@ export class IntCode {
         if (opCode === OpCode.LessThan) {
             const left = this.getParameter(parameterModes, 0);
             const right = this.getParameter(parameterModes, 1);
-            const outputPointer = intCode[instructionPointer + 3];
+            const outputPointer = this.getIntCodeAt(instructionPointer + 3);
             intCode[outputPointer] = left < right ? 1 : 0;
 
             return instructionPointer + 4;
@@ -125,10 +131,19 @@ export class IntCode {
         if (opCode === OpCode.Equals) {
             const left = this.getParameter(parameterModes, 0);
             const right = this.getParameter(parameterModes, 1);
-            const outputPointer = intCode[instructionPointer + 3];
+            const outputPointer = this.getIntCodeAt(instructionPointer + 3);
             intCode[outputPointer] = left === right ? 1 : 0;
 
             return instructionPointer + 4;
+        }
+
+        if (opCode === OpCode.RelativeBase) {
+            const modifier = this.getParameter(parameterModes, 0);
+            this.relativeBase += modifier;
+
+            consola.info(`Relative base modified by ${modifier} is now ${this.relativeBase}`);
+
+            return instructionPointer + 2;
         }
 
         throw new Error(`Unknown opcode: ${opCode}!`);
@@ -147,21 +162,35 @@ export class IntCode {
     }
 
     private getParameter(parameterModes: number[], parameterIndex: number): number {
-        const {intCode, instructionPointer} = this;
+        const {instructionPointer} = this;
         const parameterMode = parameterModes[parameterIndex];
         const parameterPointer = instructionPointer + 1 + parameterIndex;
 
         if (parameterMode === ParameterMode.Position) {
-            const position = intCode[parameterPointer];
+            const position = this.getIntCodeAt(parameterPointer);
 
-            return intCode[position];
+            return this.getIntCodeAt(position);
         }
 
         if (parameterMode === ParameterMode.Immediate) {
-            return intCode[parameterPointer];
+            return this.getIntCodeAt(parameterPointer);
+        }
+
+        if (parameterMode === ParameterMode.Relative) {
+            const parameter = this.getIntCodeAt(parameterPointer);
+
+            return this.relativeBase + parameter;
         }
 
         throw new Error(`Unknown parameter mode: ${parameterMode}!`);
+    }
+
+    private getIntCodeAt(position: number): number {
+        if (position < 0) {
+            throw new Error(`Negative indices are not supported! (${position})`);
+        }
+
+        return this.intCode[position] ?? 0;
     }
 
 }

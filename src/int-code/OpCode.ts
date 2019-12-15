@@ -7,5 +7,6 @@ export enum OpCode {
     JumpIfFalse = 6,
     LessThan = 7,
     Equals = 8,
+    RelativeBase = 9,
     Done = 99
 }
