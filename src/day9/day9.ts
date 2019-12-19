@@ -10,6 +10,7 @@ export function day9(): void {
     test4();
     test5();
     puzzle1();
+    puzzle2();
 }
 
 function test1(): void {
@@ -80,4 +81,16 @@ function puzzle1(): void {
 
     consola.info('Outputs:', outputs);
     consola.success('Puzzle 1');
+}
+
+function puzzle2(): void {
+    consola.start('Puzzle 2');
+
+    const outputs = new IntCode(day9Input, [2])
+        .execute()
+        .getOutputs()
+        .reverse();
+
+    consola.info('Outputs:', outputs);
+    consola.success('Puzzle 2');
 }
