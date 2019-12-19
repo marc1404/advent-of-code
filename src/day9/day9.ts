@@ -1,13 +1,15 @@
 import { IntCode } from '../int-code/IntCode';
 import assert from 'assert';
 import consola from 'consola';
+import { day9Input } from './input';
 
 export function day9(): void {
     test1();
     test2();
     test3();
     test4();
-    // test5();
+    test5();
+    puzzle1();
 }
 
 function test1(): void {
@@ -66,4 +68,16 @@ function test5(): void {
 
     assert.deepStrictEqual(outputs, [1125899906842624]);
     consola.success('Test 5');
+}
+
+function puzzle1(): void {
+    consola.start('Puzzle 1');
+
+    const outputs = new IntCode(day9Input, [1])
+        .execute()
+        .getOutputs()
+        .reverse();
+
+    consola.info('Outputs:', outputs);
+    consola.success('Puzzle 1');
 }

@@ -41,7 +41,7 @@ export class IntCode {
 
     public execute(yieldOnOutput: boolean = false): IntCode {
         while (true) {
-            const {intCode, instructionPointer} = this;
+            const {instructionPointer} = this;
             const instructionValue = this.getIntCodeAt(instructionPointer);
             const instruction = new Instruction(instructionValue);
 
@@ -85,18 +85,17 @@ export class IntCode {
         }
 
         if (opCode === OpCode.Input) {
-            const outputPointer = this.getIntCodeAt(instructionPointer + 1);
+            const outputPointer = this.getParameter(parameterModes, 0);
             intCode[outputPointer] = this.readInput(outputPointer);
 
             return instructionPointer + 2;
         }
 
         if (opCode === OpCode.Output) {
-            const outputPointer = this.getParameter(parameterModes, 0);
-            const output = this.getIntCodeAt(outputPointer);
+            const output = this.getParameter(parameterModes, 0);
 
             this.outputs.unshift(output);
-            consola.info(`Value at position ${outputPointer} is ${output}`);
+            consola.info(`Value at position is ${output}`);
 
             return instructionPointer + 2;
         }
@@ -178,8 +177,9 @@ export class IntCode {
 
         if (parameterMode === ParameterMode.Relative) {
             const parameter = this.getIntCodeAt(parameterPointer);
+            const position = this.relativeBase + parameter;
 
-            return this.relativeBase + parameter;
+            return this.getIntCodeAt(position);
         }
 
         throw new Error(`Unknown parameter mode: ${parameterMode}!`);
