@@ -69,7 +69,7 @@ export class IntCode {
         if (opCode === OpCode.Addition) {
             const left = this.getParameter(parameterModes, 0);
             const right = this.getParameter(parameterModes, 1);
-            const outputPointer = this.getIntCodeAt(instructionPointer + 3);
+            const outputPointer = this.getPosition(parameterModes, 2);
             intCode[outputPointer] = left + right;
 
             return instructionPointer + 4;
@@ -78,24 +78,25 @@ export class IntCode {
         if (opCode === OpCode.Multiplication) {
             const left = this.getParameter(parameterModes, 0);
             const right = this.getParameter(parameterModes, 1);
-            const outputPointer = this.getIntCodeAt(instructionPointer + 3);
+            const outputPointer = this.getPosition(parameterModes, 2);
             intCode[outputPointer] = left * right;
 
             return instructionPointer + 4;
         }
 
         if (opCode === OpCode.Input) {
-            const outputPointer = this.getParameter(parameterModes, 0);
+            const outputPointer = this.getPosition(parameterModes, 0);
             intCode[outputPointer] = this.readInput(outputPointer);
 
             return instructionPointer + 2;
         }
 
         if (opCode === OpCode.Output) {
-            const output = this.getParameter(parameterModes, 0);
+            const position = this.getPosition(parameterModes, 0);
+            const output = this.getIntCodeAt(position);
 
             this.outputs.unshift(output);
-            consola.info(`Value at position is ${output}`);
+            consola.info(`Value at position ${position} is ${output}`);
 
             return instructionPointer + 2;
         }
@@ -121,7 +122,7 @@ export class IntCode {
         if (opCode === OpCode.LessThan) {
             const left = this.getParameter(parameterModes, 0);
             const right = this.getParameter(parameterModes, 1);
-            const outputPointer = this.getIntCodeAt(instructionPointer + 3);
+            const outputPointer = this.getPosition(parameterModes, 2);
             intCode[outputPointer] = left < right ? 1 : 0;
 
             return instructionPointer + 4;
@@ -130,7 +131,7 @@ export class IntCode {
         if (opCode === OpCode.Equals) {
             const left = this.getParameter(parameterModes, 0);
             const right = this.getParameter(parameterModes, 1);
-            const outputPointer = this.getIntCodeAt(instructionPointer + 3);
+            const outputPointer = this.getPosition(parameterModes, 2);
             intCode[outputPointer] = left === right ? 1 : 0;
 
             return instructionPointer + 4;
@@ -161,25 +162,28 @@ export class IntCode {
     }
 
     private getParameter(parameterModes: number[], parameterIndex: number): number {
-        const {instructionPointer} = this;
+        const position = this.getPosition(parameterModes, parameterIndex);
+
+        return this.getIntCodeAt(position);
+    }
+
+    private getPosition(parameterModes: number[], parameterIndex: number): number {
+        const { instructionPointer } = this;
         const parameterMode = parameterModes[parameterIndex];
         const parameterPointer = instructionPointer + 1 + parameterIndex;
 
         if (parameterMode === ParameterMode.Position) {
-            const position = this.getIntCodeAt(parameterPointer);
-
-            return this.getIntCodeAt(position);
+            return this.getIntCodeAt(parameterPointer);
         }
 
         if (parameterMode === ParameterMode.Immediate) {
-            return this.getIntCodeAt(parameterPointer);
+            return parameterPointer;
         }
 
         if (parameterMode === ParameterMode.Relative) {
             const parameter = this.getIntCodeAt(parameterPointer);
-            const position = this.relativeBase + parameter;
 
-            return this.getIntCodeAt(position);
+            return this.relativeBase + parameter;
         }
 
         throw new Error(`Unknown parameter mode: ${parameterMode}!`);
