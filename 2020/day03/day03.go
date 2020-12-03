@@ -63,8 +63,8 @@ func countTrees(lines []string, modX int, modY int) int {
 			treeCount = treeCount + 1
 		}
 
-		x = x + modX
-		y = y + modY
+		x += modX
+		y += modY
 	}
 
 	return treeCount
