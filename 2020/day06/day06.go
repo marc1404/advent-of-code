@@ -81,7 +81,7 @@ func readGroups(filePath string) [][]string {
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		log.Println(line)
+
 		if line == "" {
 			groups = append(groups, answers)
 			answers = []string{}
