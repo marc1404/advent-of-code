@@ -16,7 +16,7 @@ func main() {
 	log.Println()
 
 	log.Println("Day 06 Part 02")
-	partTwo()
+	partTwo(groups)
 }
 
 func testPartOne() {
@@ -26,28 +26,30 @@ func testPartOne() {
 		"abcz",
 	}))
 
-	log.Println(countYesInGroups([][]string{
+	log.Println(countInGroups([][]string{
 		{"abc"},
 		{"a", "b", "c"},
 		{"ab", "ac"},
 		{"a", "a", "a", "a"},
 		{"b"},
-	}))
+	}, countYesInGroup))
 }
 
 func partOne(groups [][]string) {
-	log.Println("Questions answered with yes:", countYesInGroups(groups))
+	log.Println("Questions answered with yes:", countInGroups(groups, countYesInGroup))
 }
 
-func partTwo() {
-
+func partTwo(groups [][]string) {
+	log.Println("Questions answered with yes in unison:", countInGroups(groups, countUnisonYesInGroup))
 }
 
-func countYesInGroups(groups [][]string) int {
+type CountInGroup func([]string) int
+
+func countInGroups(groups [][]string, countInGroup CountInGroup) int {
 	yesCount := 0
 
 	for _, answers := range groups {
-		yesCount += countYesInGroup(answers)
+		yesCount += countInGroup(answers)
 	}
 
 	return yesCount
@@ -64,6 +66,25 @@ func countYesInGroup(answers []string) int {
 	}
 
 	return len(questionMap)
+}
+
+func countUnisonYesInGroup(answers []string) int {
+	unisonYesCount := 0
+	questionToYesCount := make(map[string]int)
+	personCount := len(answers)
+
+	for _, answer := range answers {
+		for _, letterAsByte := range answer {
+			letter := string(letterAsByte)
+			questionToYesCount[letter]++
+
+			if questionToYesCount[letter] == personCount {
+				unisonYesCount++
+			}
+		}
+	}
+
+	return unisonYesCount
 }
 
 func readGroups(filePath string) [][]string {
