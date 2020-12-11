@@ -2,27 +2,17 @@ package main
 
 import (
 	"bufio"
+	"container/list"
+	"fmt"
 	"log"
 	"os"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 func main() {
-	adapters := readLinesAsAdapters("./day10/input.txt")
-
-	log.Println("Day 10 Part 01")
-	testPartOne()
-	partOne(adapters)
-
-	log.Println()
-
-	log.Println("Day 10 Part 02")
-	partTwo()
-}
-
-func testPartOne() {
-	adapters := []int{
+	testFewAdapters := []int{
 		16,
 		10,
 		15,
@@ -36,9 +26,7 @@ func testPartOne() {
 		4,
 	}
 
-	printJoltageRatingAndDifferences(adapters)
-
-	adapters = []int{
+	testManyAdapters := []int{
 		28,
 		33,
 		18,
@@ -72,7 +60,22 @@ func testPartOne() {
 		3,
 	}
 
-	printJoltageRatingAndDifferences(adapters)
+	adapters := readLinesAsAdapters("./day10/input.txt")
+
+	log.Println("Day 10 Part 01")
+	testPartOne(testFewAdapters, testManyAdapters)
+	partOne(adapters)
+
+	log.Println()
+
+	log.Println("Day 10 Part 02")
+	testPartTwo(testFewAdapters, testManyAdapters)
+	partTwo(adapters)
+}
+
+func testPartOne(fewAdapters, manyAdapters []int) {
+	printJoltageRatingAndDifferences(fewAdapters)
+	printJoltageRatingAndDifferences(manyAdapters)
 }
 
 func partOne(adapters []int) {
@@ -82,8 +85,13 @@ func partOne(adapters []int) {
 	log.Println("Product of 1-jolt and 3-jolt differences:", product)
 }
 
-func partTwo() {
+func testPartTwo(fewAdapters, manyAdapters []int) {
+	log.Println("Arrangement count for few adapters:", len(findArrangements(fewAdapters)))
+	log.Println("Arrangement count for many adapters:", len(findArrangements(manyAdapters)))
+}
 
+func partTwo(adapters []int) {
+	log.Println("Arrangement count for input adapters:", len(findArrangements(adapters)))
 }
 
 func getJoltageRatingAndDifferences(adapters []int) (deviceJoltageRating int, differenceToCount map[int]int) {
@@ -131,6 +139,73 @@ func collectJoltageDifferences(adapters []int, targetJoltage int, differenceToCo
 	}
 
 	return differenceToCount
+}
+
+func findArrangements(adapters []int) map[string]bool {
+	sortAscending(adapters)
+
+	deviceJoltageRating := determineDeviceJoltageRating(adapters)
+	adapters = append([]int{0}, adapters...)
+	adapters = append(adapters, deviceJoltageRating)
+	adapterList := list.New()
+
+	for _, adapter := range adapters {
+		adapterList.PushBack(adapter)
+	}
+
+	arrangements := make(map[string]bool)
+	arrangements[getArrangementKey(adapterList)] = true
+	arrangements = findSubArrangements(adapterList, arrangements)
+
+	return arrangements
+}
+
+func findSubArrangements(adapters *list.List, arrangements map[string]bool) map[string]bool {
+	for adapter := adapters.Front().Next(); adapter.Next() != nil; adapter = adapter.Next() {
+		left := adapter.Prev()
+		right := adapter.Next()
+		difference := right.Value.(int) - left.Value.(int)
+
+		if difference > 3 {
+			continue
+		}
+
+		subArrangement := cloneListWithout(adapters, adapter)
+		subArrangementKey := getArrangementKey(subArrangement)
+
+		if arrangements[subArrangementKey] {
+			continue
+		}
+
+		arrangements[subArrangementKey] = true
+		arrangements = findSubArrangements(subArrangement, arrangements)
+	}
+
+	return arrangements
+}
+
+func cloneListWithout(original *list.List, elementToRemove *list.Element) *list.List {
+	clone := list.New()
+
+	for element := original.Front(); element != nil; element = element.Next() {
+		if element == elementToRemove {
+			continue
+		}
+
+		clone.PushBack(element.Value)
+	}
+
+	return clone
+}
+
+func getArrangementKey(adapters *list.List) string {
+	var builder strings.Builder
+
+	for adapter := adapters.Front(); adapter != nil; adapter = adapter.Next() {
+		builder.WriteString(fmt.Sprintf("%v;", adapter.Value))
+	}
+
+	return builder.String()
 }
 
 func readLinesAsAdapters(filePath string) []int {
