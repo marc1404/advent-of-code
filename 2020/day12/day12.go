@@ -9,28 +9,21 @@ import (
 )
 
 func main() {
-	lines := readAllLines("./day12/input.txt")
+	testInstructions := readAllLines("./day12/test_input.txt")
+	instructions := readAllLines("./day12/input.txt")
 
 	log.Println("Day 12 Part 01")
-	testPartOne()
-	partOne(lines)
+	testPartOne(testInstructions)
+	partOne(instructions)
 
 	log.Println()
 
 	log.Println("Day 12 Part 02")
-	testPartTwo()
-	partTwo()
+	testPartTwo(testInstructions)
+	partTwo(instructions)
 }
 
-func testPartOne() {
-	instructions := []string{
-		"F10",
-		"N3",
-		"F7",
-		"R90",
-		"F11",
-	}
-
+func testPartOne(instructions []string) {
 	log.Println(distanceAfterNavigation(instructions))
 }
 
@@ -38,12 +31,43 @@ func partOne(instructions []string) {
 	log.Println(distanceAfterNavigation(instructions))
 }
 
-func testPartTwo() {
-
+func testPartTwo(instructions []string) {
+	log.Println(distanceAfterWaypointNavigation(instructions))
 }
 
-func partTwo() {
+func partTwo(instructions []string) {
+	log.Println(distanceAfterWaypointNavigation(instructions))
+}
 
+func distanceAfterWaypointNavigation(instructions []string) int {
+	var shipEast, shipNorth int
+	waypointEast := 10
+	waypointNorth := 1
+
+	for _, instruction := range instructions {
+		action, value := parseInstruction(instruction)
+
+		switch action {
+		case "N":
+			waypointEast, waypointNorth = move("N", waypointEast, waypointNorth, value)
+		case "S":
+			waypointEast, waypointNorth = move("S", waypointEast, waypointNorth, value)
+		case "E":
+			waypointEast, waypointNorth = move("E", waypointEast, waypointNorth, value)
+		case "W":
+			waypointEast, waypointNorth = move("W", waypointEast, waypointNorth, value)
+		case "L":
+			waypointEast, waypointNorth = rotate(waypointEast, waypointNorth, rotateLeft, value)
+		case "R":
+			waypointEast, waypointNorth = rotate(waypointEast, waypointNorth, rotateRight, value)
+		case "F":
+			shipEast, shipNorth = moveToWaypoint(shipEast, shipNorth, waypointEast, waypointNorth, value)
+		default:
+			panic(fmt.Sprintf("Unexpected action: %v!", action))
+		}
+	}
+
+	return abs(shipEast) + abs(shipNorth)
 }
 
 func distanceAfterNavigation(instructions []string) int {
@@ -51,8 +75,7 @@ func distanceAfterNavigation(instructions []string) int {
 	orientation := "E"
 
 	for _, instruction := range instructions {
-		action := string(instruction[0])
-		value, _ := strconv.Atoi(instruction[1:])
+		action, value := parseInstruction(instruction)
 
 		switch action {
 		case "N":
@@ -77,6 +100,13 @@ func distanceAfterNavigation(instructions []string) int {
 	return abs(east) + abs(north)
 }
 
+func parseInstruction(instruction string) (string, int) {
+	action := string(instruction[0])
+	value, _ := strconv.Atoi(instruction[1:])
+
+	return action, value
+}
+
 func move(direction string, east, north, distance int) (int, int) {
 	switch direction {
 	case "N":
@@ -92,6 +122,41 @@ func move(direction string, east, north, distance int) (int, int) {
 	}
 
 	return east, north
+}
+
+func moveToWaypoint(shipEast, shipNorth, waypointEast, waypointNorth, distance int) (int, int) {
+	for i := 0; i < distance; i++ {
+		shipEast += waypointEast
+		shipNorth += waypointNorth
+	}
+
+	return shipEast, shipNorth
+}
+
+type RotateFunc func(int, int) (int, int)
+
+func rotate(east, north int, rotateFunc RotateFunc, degrees int) (int, int) {
+	turns := degrees / 90
+
+	for i := 0; i < turns; i++ {
+		east, north = rotateFunc(east, north)
+	}
+
+	return east, north
+}
+
+func rotateLeft(oldEast, oldNorth int) (newEast, newNorth int) {
+	newEast = -oldNorth
+	newNorth = oldEast
+
+	return newEast, newNorth
+}
+
+func rotateRight(oldEast, oldNorth int) (newEast, newNorth int) {
+	newEast = oldNorth
+	newNorth = -oldEast
+
+	return newEast, newNorth
 }
 
 func turn(orientation string, turnFunc TurnFunc, degrees int) string {
