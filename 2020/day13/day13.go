@@ -20,7 +20,7 @@ func main() {
 
 	log.Println("Day 13 Part 02")
 	testPartTwo()
-	partTwo()
+	partTwo(busses)
 }
 
 func testPartOne() {
@@ -32,17 +32,51 @@ func testPartOne() {
 }
 
 func partOne(earliest int, busses []int) {
-	bus, departure := getEarliestBus(earliest, busses)
+	bussesInService := []int{}
+
+	for _, bus := range busses {
+		if bus == 1 {
+			continue
+		}
+
+		bussesInService = append(bussesInService, bus)
+	}
+
+	bus, departure := getEarliestBus(earliest, bussesInService)
 
 	log.Println(hash(departure, earliest, bus))
 }
 
 func testPartTwo() {
-
+	log.Println(getSuccessionTimestamp([]int{7, 13, 1, 1, 59, 1, 31, 19}))
+	log.Println(getSuccessionTimestamp([]int{17, 1, 13, 19}))
+	log.Println(getSuccessionTimestamp([]int{67, 7, 59, 61}))
+	log.Println(getSuccessionTimestamp([]int{67, 1, 7, 59, 61}))
+	log.Println(getSuccessionTimestamp([]int{67, 7, 1, 59, 61}))
+	log.Println(getSuccessionTimestamp([]int{1789, 37, 47, 1889}))
 }
 
-func partTwo() {
+func partTwo(busses []int) {
+	log.Println(getSuccessionTimestamp(busses))
+}
 
+func getSuccessionTimestamp(busses []int) int {
+	timestamp := 0
+	step := 1
+
+	for i, bus := range busses {
+		if bus == 1 {
+			continue
+		}
+
+		for (timestamp+i)%bus > 0 {
+			timestamp += step
+		}
+
+		step *= bus
+	}
+
+	return timestamp
 }
 
 func hash(departure, earliest, bus int) int {
@@ -94,7 +128,7 @@ func readEarliestAndBusses(filePath string) (earliest int, busses []int) {
 
 	for _, busAsString := range bussesParts {
 		if busAsString == "x" {
-			continue
+			busAsString = "1"
 		}
 
 		bus, _ := strconv.Atoi(busAsString)
