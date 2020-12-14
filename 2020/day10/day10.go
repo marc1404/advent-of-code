@@ -2,13 +2,10 @@ package main
 
 import (
 	"bufio"
-	"container/list"
-	"fmt"
 	"log"
 	"os"
 	"sort"
 	"strconv"
-	"strings"
 )
 
 func main() {
@@ -86,12 +83,12 @@ func partOne(adapters []int) {
 }
 
 func testPartTwo(fewAdapters, manyAdapters []int) {
-	log.Println("Arrangement count for few adapters:", len(findArrangements(fewAdapters)))
-	log.Println("Arrangement count for many adapters:", len(findArrangements(manyAdapters)))
+	log.Println("Arrangement count for few adapters:", countArrangements(fewAdapters))
+	log.Println("Arrangement count for many adapters:", countArrangements(manyAdapters))
 }
 
 func partTwo(adapters []int) {
-	log.Println("Arrangement count for input adapters:", len(findArrangements(adapters)))
+	log.Println("Arrangement count for input adapters:", countArrangements(adapters))
 }
 
 func getJoltageRatingAndDifferences(adapters []int) (deviceJoltageRating int, differenceToCount map[int]int) {
@@ -141,71 +138,39 @@ func collectJoltageDifferences(adapters []int, targetJoltage int, differenceToCo
 	return differenceToCount
 }
 
-func findArrangements(adapters []int) map[string]bool {
+func countArrangements(adapters []int) int {
 	sortAscending(adapters)
 
 	deviceJoltageRating := determineDeviceJoltageRating(adapters)
 	adapters = append([]int{0}, adapters...)
 	adapters = append(adapters, deviceJoltageRating)
-	adapterList := list.New()
+	cache := make(map[int]int)
 
-	for _, adapter := range adapters {
-		adapterList.PushBack(adapter)
-	}
-
-	arrangements := make(map[string]bool)
-	arrangements[getArrangementKey(adapterList)] = true
-	arrangements = findSubArrangements(adapterList, arrangements)
-
-	return arrangements
+	return countSubArrangements(adapters, cache, 0)
 }
 
-func findSubArrangements(adapters *list.List, arrangements map[string]bool) map[string]bool {
-	for adapter := adapters.Front().Next(); adapter.Next() != nil; adapter = adapter.Next() {
-		left := adapter.Prev()
-		right := adapter.Next()
-		difference := right.Value.(int) - left.Value.(int)
-
-		if difference > 3 {
-			continue
-		}
-
-		subArrangement := cloneListWithout(adapters, adapter)
-		subArrangementKey := getArrangementKey(subArrangement)
-
-		if arrangements[subArrangementKey] {
-			continue
-		}
-
-		arrangements[subArrangementKey] = true
-		arrangements = findSubArrangements(subArrangement, arrangements)
+func countSubArrangements(adapters []int, cache map[int]int, n int) int {
+	if n == len(adapters)-1 {
+		return 1
 	}
 
-	return arrangements
-}
+	cacheValue, hasCache := cache[n]
 
-func cloneListWithout(original *list.List, elementToRemove *list.Element) *list.List {
-	clone := list.New()
+	if hasCache {
+		return cacheValue
+	}
 
-	for element := original.Front(); element != nil; element = element.Next() {
-		if element == elementToRemove {
-			continue
+	count := 0
+
+	for i := n + 1; i < len(adapters); i++ {
+		if adapters[i]-adapters[n] <= 3 {
+			count += countSubArrangements(adapters, cache, i)
 		}
-
-		clone.PushBack(element.Value)
 	}
 
-	return clone
-}
+	cache[n] = count
 
-func getArrangementKey(adapters *list.List) string {
-	var builder strings.Builder
-
-	for adapter := adapters.Front(); adapter != nil; adapter = adapter.Next() {
-		builder.WriteString(fmt.Sprintf("%v;", adapter.Value))
-	}
-
-	return builder.String()
+	return count
 }
 
 func readLinesAsAdapters(filePath string) []int {
