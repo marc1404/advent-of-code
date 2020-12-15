@@ -49,16 +49,16 @@ func playMemoryUntilTurn(numbers []int, stopAfterTurn int) int {
 		updateMemory(numberToMemory, number, i+1)
 	}
 
+	lastNumber := numbers[len(numbers)-1]
 	turn := len(numbers) + 1
 
 	for {
-		lastNumber := numbers[turn-2]
 		memory := numberToMemory[lastNumber]
 		number := determineSpokenNumber(memory)
-		numbers = append(numbers, number)
 
 		updateMemory(numberToMemory, number, turn)
 
+		lastNumber = number
 		turn++
 
 		if turn > stopAfterTurn {
