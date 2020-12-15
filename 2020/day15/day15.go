@@ -68,15 +68,21 @@ func playMemoryUntilTurn(numbers []int, stopAfterTurn int) int {
 }
 
 func determineSpokenNumber(memory []int) int {
-	memoryLength := len(memory)
-
-	if memoryLength == 1 {
+	if memory[0] == 0 {
 		return 0
 	}
 
-	return memory[memoryLength-1] - memory[memoryLength-2]
+	return memory[1] - memory[0]
 }
 
 func updateMemory(numberToMemory map[int][]int, number, turn int) {
-	numberToMemory[number] = append(numberToMemory[number], turn)
+	memory, hasMemory := numberToMemory[number]
+
+	if !hasMemory {
+		memory = make([]int, 2)
+	}
+
+	memory[0] = memory[1]
+	memory[1] = turn
+	numberToMemory[number] = memory
 }
