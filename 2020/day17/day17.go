@@ -12,18 +12,15 @@ func main() {
 	testLines := readAllLines("./day17/test_input.txt")
 	lines := readAllLines("./day17/input.txt")
 
-	testInput := parseInput(testLines)
-	input := parseInput(lines)
-
 	log.Println("Day 17 Part 01")
-	testPartOne(testInput)
-	partOne(input)
+	testPartOne(parseInput(testLines, false))
+	partOne(parseInput(lines, false))
 
 	log.Println()
 
 	log.Println("Day 17 Part 02")
-	testPartTwo(testInput)
-	partTwo(input)
+	testPartTwo(parseInput(testLines, true))
+	partTwo(parseInput(lines, true))
 }
 
 func testPartOne(input Input) {
@@ -37,11 +34,13 @@ func partOne(input Input) {
 }
 
 func testPartTwo(input Input) {
-
+	input.simulateCycles(6)
+	log.Println("expected: 848, actual:", input.countActiveCubes())
 }
 
 func partTwo(input Input) {
-
+	input.simulateCycles(6)
+	log.Println("Active cubes after the sixth cycle:", input.countActiveCubes())
 }
 
 type ConwayCube struct {
@@ -50,23 +49,25 @@ type ConwayCube struct {
 }
 
 type Position struct {
-	x, y, z int
+	x, y, z, w int
 }
 
 type Input struct {
-	positionToCube map[string]ConwayCube
+	positionToCube  map[string]ConwayCube
+	fourthDimension bool
 }
 
-func (position Position) relative(x, y, z int) Position {
+func (position Position) relative(x, y, z, w int) Position {
 	return Position{
 		x: position.x + x,
 		y: position.y + y,
 		z: position.z + z,
+		w: position.w + w,
 	}
 }
 
 func (position Position) toString() string {
-	return fmt.Sprintf("%v,%v,%v", position.x, position.y, position.z)
+	return fmt.Sprintf("%v,%v,%v,%v", position.x, position.y, position.z, position.w)
 }
 
 func (input Input) getCubeAt(position Position, initialize bool) ConwayCube {
@@ -84,19 +85,26 @@ func (input Input) getCubeAt(position Position, initialize bool) ConwayCube {
 }
 
 func (input Input) getNeighborCubes(cube ConwayCube, initialize bool) []ConwayCube {
-	cubes := make([]ConwayCube, 26)
-	index := 0
+	var cubes []ConwayCube
+	minW := 0
+	maxW := 0
+
+	if input.fourthDimension {
+		minW = -1
+		maxW = 1
+	}
 
 	for x := -1; x <= 1; x++ {
 		for y := -1; y <= 1; y++ {
 			for z := -1; z <= 1; z++ {
-				if x == 0 && y == 0 && z == 0 {
-					continue
-				}
+				for w := minW; w <= maxW; w++ {
+					if x == 0 && y == 0 && z == 0 && w == 0 {
+						continue
+					}
 
-				position := cube.position.relative(x, y, z)
-				cubes[index] = input.getCubeAt(position, initialize)
-				index++
+					position := cube.position.relative(x, y, z, w)
+					cubes = append(cubes, input.getCubeAt(position, initialize))
+				}
 			}
 		}
 	}
@@ -177,7 +185,7 @@ func (input Input) printSlice(z, min, max int) {
 		line := strings.Builder{}
 
 		for y := min; y <= max; y++ {
-			position := Position{x, y, z}
+			position := Position{x, y, z, 0}
 			cube := input.getCubeAt(position, false)
 			active := ""
 
@@ -195,9 +203,9 @@ func (input Input) printSlice(z, min, max int) {
 	}
 }
 
-func parseInput(lines []string) Input {
+func parseInput(lines []string, fourthDimension bool) Input {
 	positionToCube := make(map[string]ConwayCube)
-	input := Input{positionToCube}
+	input := Input{positionToCube, fourthDimension}
 
 	for x, line := range lines {
 		for y, activeRune := range line {
@@ -213,7 +221,7 @@ func parseInput(lines []string) Input {
 				panic(fmt.Sprintf("Unexpected active rune: %v!", activeString))
 			}
 
-			position := Position{x, y, 0}
+			position := Position{x, y, 0, 0}
 			cube := ConwayCube{position, active}
 			positionToCube[position.toString()] = cube
 		}
