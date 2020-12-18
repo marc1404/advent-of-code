@@ -11,20 +11,22 @@ import (
 )
 
 func main() {
-	testLines := readAllLines("./day16/test_input.txt")
+	testLines1 := readAllLines("./day16/test_input_1.txt")
+	testLines2 := readAllLines("./day16/test_input_2.txt")
 	lines := readAllLines("./day16/input.txt")
 
-	testInput := parseInput(testLines)
+	testInput1 := parseInput(testLines1)
+	testInput2 := parseInput(testLines2)
 	input := parseInput(lines)
 
 	log.Println("Day 16 Part 01")
-	testPartOne(testInput)
+	testPartOne(testInput1)
 	partOne(input)
 
 	log.Println()
 
 	log.Println("Day 16 Part 02")
-	testPartTwo(testInput)
+	testPartTwo(testInput2)
 	partTwo(input)
 }
 
@@ -37,11 +39,60 @@ func partOne(input Input) {
 }
 
 func testPartTwo(input Input) {
-
+	input.solvePartTwo()
 }
 
 func partTwo(input Input) {
+	input.solvePartTwo()
+}
 
+func (input Input) solvePartTwo() {
+	height := len(input.yourTicket.fields)
+	width := len(input.nearbyTickets) + 1
+	columns := make([]Column, height)
+
+	for i, value := range input.yourTicket.fields {
+		column := Column{i, make([]int, width), make([]string, 0)}
+		column.values[0] = value
+		columns[i] = column
+	}
+
+	for x, ticket := range input.nearbyTickets {
+		for y, value := range ticket.fields {
+			column := columns[y]
+			column.values[x+1] = value
+		}
+	}
+
+	for i, column := range columns {
+		for _, field := range input.fields {
+			valid := true
+
+			for _, value := range column.values {
+				if !field.isValueValid(value) {
+					valid = false
+					break
+				}
+			}
+
+			if !valid {
+				continue
+			}
+
+			column.possibleFields = append(column.possibleFields, field.name)
+			columns[i] = column
+		}
+	}
+
+	cols := make([]Column, 0)
+
+	for _, column := range columns {
+		if len(column.possibleFields) > 0 {
+			cols = append(cols, column)
+		}
+	}
+
+	return
 }
 
 func determineTicketScanningErrorRate(input Input) int {
@@ -56,6 +107,12 @@ func determineTicketScanningErrorRate(input Input) int {
 	}
 
 	return ticketScanningErrorRate
+}
+
+type Column struct {
+	index          int
+	values         []int
+	possibleFields []string
 }
 
 type Span struct {
