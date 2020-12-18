@@ -11,49 +11,56 @@ import (
 )
 
 func main() {
-	lines := readAllLines("./day18/input.txt")
+	testInput := []TestInput{
+		{"1 + 2 * 3 + 4 * 5 + 6", 71, 231},
+		{"1 + (2 * 3) + (4 * (5 + 6))", 51, 51},
+		{"2 * 3 + (4 * 5)", 26, 46},
+		{"5 + (8 * 3 + 9 + 3 * 4 * 3)", 437, 1445},
+		{"5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))", 12240, 669060},
+		{"((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2", 13632, 23340},
+	}
+	input := readAllLines("./day18/input.txt")
 
 	log.Println("Day 18 Part 01")
-	testPartOne()
-	partOne(lines)
+	testPartOne(testInput)
+	partOne(input)
 
 	log.Println()
 
 	log.Println("Day 18 Part 02")
-	testPartTwo()
-	partTwo()
+	testPartTwo(testInput)
+	partTwo(input)
 }
 
-func testPartOne() {
-	log.Println("expected: 71, actual:", calculateExpression("1 + 2 * 3 + 4 * 5 + 6"))
-	log.Println("expected: 51, actual:", calculateExpression("1 + (2 * 3) + (4 * (5 + 6))"))
-	log.Println("expected: 26, actual:", calculateExpression("2 * 3 + (4 * 5)"))
-	log.Println("expected: 437, actual:", calculateExpression("5 + (8 * 3 + 9 + 3 * 4 * 3)"))
-	log.Println("expected: 12240, actual:", calculateExpression("5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))"))
-	log.Println("expected: 13632, actual:", calculateExpression("((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2"))
-
+func testPartOne(testInput []TestInput) {
+	test(testInput, false)
 }
 
-func partOne(lines []string) {
+func partOne(expressions []string) {
+	log.Println("Sum of resulting values:", sumOfExpressions(expressions, false))
+}
+
+func testPartTwo(testInput []TestInput) {
+	test(testInput, true)
+}
+
+func partTwo(expressions []string) {
+	log.Println("Sum of resulting values:", sumOfExpressions(expressions, true))
+}
+
+func sumOfExpressions(expressions []string, useAdvancedMath bool) int {
 	sum := 0
 
-	for _, line := range lines {
-		sum += calculateExpression(line)
+	for _, expression := range expressions {
+		sum += calculateExpression(expression, useAdvancedMath)
 	}
 
-	log.Println("Sum of resulting values:", sum)
+	return sum
 }
 
-func testPartTwo() {
-
-}
-
-func partTwo() {
-
-}
-
-func calculateExpression(expression string) int {
-	pattern := regexp.MustCompile("\\([\\d\\s\\+\\*]+\\)")
+func calculateExpression(expression string, useAdvancedMath bool) int {
+	expression = strings.ReplaceAll(expression, " ", "")
+	pattern := regexp.MustCompile(`\([\d\+\*]+\)`)
 
 	for {
 		matches := pattern.FindAllStringSubmatch(expression, -1)
@@ -66,17 +73,26 @@ func calculateExpression(expression string) int {
 			wrappedExpression := match[0]
 			subExpression := strings.TrimPrefix(wrappedExpression, "(")
 			subExpression = strings.TrimSuffix(subExpression, ")")
-			result := calculateSimpleExpression(subExpression)
+			result := calculateSimpleExpression(subExpression, useAdvancedMath)
 			expression = strings.Replace(expression, wrappedExpression, strconv.Itoa(result), 1)
 		}
 	}
 
-	return calculateSimpleExpression(expression)
+	return calculateSimpleExpression(expression, useAdvancedMath)
 }
 
-func calculateSimpleExpression(expression string) int {
-	result := 0
+func calculateSimpleExpression(expression string, useAdvancedMath bool) int {
 	expression = strings.ReplaceAll(expression, " ", "")
+
+	if useAdvancedMath {
+		advancedExpression := rewriteToAdvancedMath(expression)
+
+		if advancedExpression != expression {
+			return calculateExpression(advancedExpression, true)
+		}
+	}
+
+	result := 0
 	expression = expression + "+"
 	characters := strings.Split(expression, "")
 	numberBuilder := strings.Builder{}
@@ -108,6 +124,39 @@ func calculateSimpleExpression(expression string) int {
 	}
 
 	return result
+}
+
+func rewriteToAdvancedMath(expression string) string {
+	if !strings.ContainsRune(expression, '*') {
+		return expression
+	}
+
+	pattern := regexp.MustCompile(`(\d+(\+\d+))`)
+
+	return pattern.ReplaceAllString(expression, `($1)`)
+}
+
+func test(testInput []TestInput, useAdvancedMath bool) {
+	for _, test := range testInput {
+		var expected int
+
+		switch useAdvancedMath {
+		case false:
+			expected = test.expectedSimpleMath
+		case true:
+			expected = test.expectedAdvancedMath
+		}
+
+		actual := calculateExpression(test.expression, useAdvancedMath)
+
+		log.Println(fmt.Sprintf("expected: %v, actual: %v", expected, actual))
+	}
+}
+
+type TestInput struct {
+	expression           string
+	expectedSimpleMath   int
+	expectedAdvancedMath int
 }
 
 func readAllLines(filePath string) (lines []string) {
