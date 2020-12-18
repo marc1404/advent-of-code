@@ -97,7 +97,6 @@ func calculateSimpleExpression(expression string, useAdvancedMath bool) int {
 	characters := strings.Split(expression, "")
 	numberBuilder := strings.Builder{}
 	operator := "+"
-	number := 0
 
 	for _, character := range characters {
 		if character != "+" && character != "*" {
@@ -109,7 +108,7 @@ func calculateSimpleExpression(expression string, useAdvancedMath bool) int {
 
 		numberBuilder.Reset()
 
-		number, _ = strconv.Atoi(numberAsString)
+		number, _ := strconv.Atoi(numberAsString)
 
 		switch operator {
 		case "+":
