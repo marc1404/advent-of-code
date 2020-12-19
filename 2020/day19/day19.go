@@ -11,21 +11,20 @@ import (
 )
 
 func main() {
-	testLines := readAllLines("./day19/test_input.txt")
 	lines := readAllLines("./day19/input.txt")
 
 	log.Println("Day 19 Part 01")
-	testPartOne(testLines)
+	testPartOne()
 	partOne(lines)
 
 	log.Println()
 
 	log.Println("Day 19 Part 02")
-	testPartTwo()
-	partTwo()
+	partTwo(lines)
 }
 
-func testPartOne(lines []string) {
+func testPartOne() {
+	lines := readAllLines("./day19/test_input.txt")
 	rules, messages := parseRulesAndMessage(lines)
 
 	log.Println("expected: 2, actual:", rules[0].countValidMessages(messages))
@@ -38,10 +37,38 @@ func partOne(lines []string) {
 	log.Println("Answer:", rules[0].countValidMessages(messages))
 }
 
-func testPartTwo() {
-}
+func partTwo(lines []string) {
+	lines[9] = "0: (8)+ (42){n} (31){n}"
+	rules, messages := parseRulesAndMessage(lines)
+	ruleZero := rules[0]
+	messageToValid := make(map[string]bool)
+	validCount := 0
+	n := 1
 
-func partTwo() {
+	for {
+		rule := Rule{0, ruleZero.pattern, nil}
+		rule.pattern = strings.Replace(rule.pattern, "{n}", fmt.Sprintf("{%v}", n), 2)
+
+		rule.compilePattern()
+
+		for _, message := range messages {
+			if rule.isMessageValid(message) {
+				messageToValid[message] = true
+			}
+		}
+
+		newValidCount := len(messageToValid)
+
+		if newValidCount == validCount {
+			break
+		}
+
+		validCount = newValidCount
+		n++
+	}
+
+	log.Println("How many messages completely match rule 0?")
+	log.Println("Answer:", validCount)
 }
 
 func parseRulesAndMessage(lines []string) ([]*Rule, []string) {
@@ -144,6 +171,11 @@ func (rule *Rule) replaceRules(rules []*Rule) bool {
 func (rule *Rule) postProcessing() {
 	rule.pattern = strings.ReplaceAll(rule.pattern, " ", "")
 	rule.pattern = fmt.Sprintf(`^%v$`, rule.pattern)
+
+	rule.compilePattern()
+}
+
+func (rule *Rule) compilePattern() {
 	rule.regex = regexp.MustCompile(rule.pattern)
 }
 
@@ -151,12 +183,16 @@ func (rule *Rule) countValidMessages(messages []string) int {
 	validCount := 0
 
 	for _, message := range messages {
-		if rule.regex.MatchString(message) {
+		if rule.isMessageValid(message) {
 			validCount++
 		}
 	}
 
 	return validCount
+}
+
+func (rule *Rule) isMessageValid(message string) bool {
+	return rule.regex.MatchString(message)
 }
 
 func readAllLines(filePath string) (lines []string) {
