@@ -54,6 +54,38 @@ def determine_power_consumption(grid):
     return power_consumption
 
 
+def determine_oxygen_and_co2_scrubber_ratings(grid):
+    oxygen_grid = grid[:]
+    co2_grid = grid[:]
+
+    for column_index, _ in enumerate(grid[0]):
+        oxygen_column = get_column(oxygen_grid, column_index)
+        co2_column = get_column(co2_grid, column_index)
+        (common, _) = determine_common_and_uncommon(oxygen_column)
+        (_, uncommon) = determine_common_and_uncommon(co2_column)
+
+        if len(oxygen_grid) > 1:
+            oxygen_grid = [row for row in oxygen_grid if row[column_index] == common]
+
+        if len(co2_grid) > 1:
+            co2_grid = [row for row in co2_grid if row[column_index] == uncommon]
+
+        if len(oxygen_grid) == 1 and len(co2_grid) == 1:
+            break
+
+    oxygen_rating = bits_to_decimal(oxygen_grid[0])
+    co2_scrubber_rating = bits_to_decimal(co2_grid[0])
+
+    return oxygen_rating, co2_scrubber_rating
+
+
+def determine_life_support_rating(grid):
+    (oxygen_rating, co2_scrubber_rating) = determine_oxygen_and_co2_scrubber_ratings(grid)
+    life_support_rating = oxygen_rating * co2_scrubber_rating
+
+    return life_support_rating
+
+
 def main():
     example_grid = read_diagnostics_grid('example.txt')
     input_grid = read_diagnostics_grid('input.txt')
@@ -61,6 +93,10 @@ def main():
     print('Part 1')
     print(f'Example: {determine_power_consumption(example_grid)}')
     print(f'Input: {determine_power_consumption(input_grid)}')
+    print('')
+    print('Part 2')
+    print(f'Example: {determine_life_support_rating(example_grid)}')
+    print(f'Input: {determine_life_support_rating(input_grid)}')
 
 
 if __name__ == '__main__':
